@@ -18,11 +18,26 @@ questions = [
 
 @app.route('/ask', methods=['GET'])
 def ask_question():
-    domain = request.args.get('domain', 'web')  # tu peux passer ?domain=web ou data ou mobile
-    prompt = f"""
-Génère une question d'entretien technique pour un poste de développeur junior dans le domaine {domain}.
+    # Liste des domaines supportés
+    valid_domains = ['web', 'mobile', 'ai', 'cybersecurity']
+    domain = request.args.get('domain', 'web').lower()
+    if domain not in valid_domains:
+        return jsonify({"error": f"Domaine non supporté. Choisissez parmi : {', '.join(valid_domains)}."}), 400
+    lang = request.args.get('lang', 'fr').lower()
+    if lang not in ['fr', 'en']:
+        lang = 'fr'
+    # Prompt adapté au domaine et à la langue
+    if lang == 'en':
+        prompt = f"""
+Generate ONLY a technical interview question for a junior developer position in the {domain.upper()} domain.
+Do NOT provide any explanation, answer, context, or quotes, ONLY the question.
+The question must be clear, concise, and suitable for a beginner level.
+"""
+    else:
+        prompt = f"""
+Génère UNIQUEMENT une question d'entretien technique pour un poste de développeur junior dans le domaine {domain.upper()}.
+Ne donne AUCUNE explication, AUCUNE réponse, AUCUN contexte, AUCUN guillemet, RIEN d'autre que la question.
 La question doit être claire, concise et adaptée à un niveau débutant.
-Réponds uniquement par la question, sans explication ni réponse.
 """
     try:
         response = requests.post(
